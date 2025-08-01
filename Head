@@ -1,0 +1,192 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Nosch Hub",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "Nosch HUB",
+   LoadingSubtitle = "by Nosch",
+   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local MainTab = Window:CreateTab("🏠 HOME", nil) -- Title, Image
+local Section = MainTab:CreateSection("Main")
+
+Rayfield:Notify({
+   Title = "Execution succesed!",
+   Content = "Wow, you SIGMA executed the script",
+   Duration = 6.5,
+   Image = nil,
+})
+
+local Button = MainTab:CreateButton({
+   Name = "+WalkSpeed",
+   Callback = function()
+   local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HRP = Character:WaitForChild("HumanoidRootPart")
+local Humanoid = Character:WaitForChild("Humanoid")
+
+local SpeedhackEnabled = true
+local SpeedMultiplier = 1.3 -- default 
+
+local function getMoveDirection()
+    local moveDir = Humanoid.MoveDirection
+    if moveDir.Magnitude > 0 then
+        return moveDir.Unit
+    end
+    return nil
+end
+
+-- // T to toggle \\ --
+UIS.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.T then
+        SpeedhackEnabled = not SpeedhackEnabled
+        speedToggle:Set(SpeedhackEnabled)
+    end
+end)
+
+-- // Movement \\ --
+RunService.RenderStepped:Connect(function(dt)
+    if SpeedhackEnabled and Humanoid.MoveDirection.Magnitude > 0 then
+        local moveDir = getMoveDirection()
+        if moveDir then
+            local speed = Humanoid.WalkSpeed * (SpeedMultiplier - 1)
+            HRP.CFrame = HRP.CFrame + (moveDir * speed * dt)
+        end
+    end
+end)
+
+-- Auto-Fix on Respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    HRP = char:WaitForChild("HumanoidRootPart")
+    Humanoid = char:WaitForChild("Humanoid")
+end)
+
+   end,
+})
+
+local Button = MainTab:CreateButton({
+   Name = "ESP",
+   Callback = function()
+   local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function createESP(player)
+    if player == LocalPlayer then return end  -- Eigener Spieler wird ausgelassen
+    if not player.Character or not player.Character:FindFirstChild("Head") then return end
+
+    local head = player.Character.Head
+
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Size = UDim2.new(0, 150, 0, 70)
+    billboardGui.Adornee = head
+    billboardGui.AlwaysOnTop = true
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+
+    local nameLabel = Instance.new("TextLabel", billboardGui)
+    nameLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.Text = player.Name
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.SourceSansBold
+
+    local distanceLabel = Instance.new("TextLabel", billboardGui)
+    distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0.4, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.TextColor3 = Color3.new(1, 1, 0)
+    distanceLabel.TextStrokeTransparency = 0
+    distanceLabel.TextScaled = true
+    distanceLabel.Font = Enum.Font.SourceSans
+
+    local teamLabel = Instance.new("TextLabel", billboardGui)
+    teamLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    teamLabel.Position = UDim2.new(0, 0, 0.7, 0)
+    teamLabel.BackgroundTransparency = 1
+    teamLabel.TextStrokeTransparency = 0
+    teamLabel.TextScaled = true
+    teamLabel.Font = Enum.Font.SourceSansBold
+
+    -- Team Text & Color
+    if player.Team then
+        teamLabel.Text = "Team: " .. player.Team.Name
+        teamLabel.TextColor3 = player.Team.TeamColor.Color
+    else
+        teamLabel.Text = "Team: None"
+        teamLabel.TextColor3 = Color3.new(1, 1, 1)
+    end
+
+    billboardGui.Parent = head
+
+    -- Update Entfernung jede Frame
+    local RunService = game:GetService("RunService")
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            distanceLabel.Text = ("Distance: %.1f studs"):format(dist)
+        else
+            distanceLabel.Text = "Distance: N/A"
+        end
+
+        -- Disconnect wenn der Spieler stirbt oder verschwindet
+        if not player.Character or not player.Character.Parent then
+            connection:Disconnect()
+        end
+    end)
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    createESP(player)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        createESP(player)
+    end)
+end)
+
+
+
+
+   end,
+})
