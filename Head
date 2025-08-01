@@ -251,3 +251,101 @@ local Toggle = MainTab:CreateToggle({
    end,
 })
 
+-- 🛠️ Toggle UI (an dein UI-System anpassen, z. B. Rayfield oder Kavo)
+local Toggle = MainTab:CreateToggle({q
+    Name = "AURA FARMING",
+    CurrentValue = false,
+    Flag = "AuraFarmingToggle",
+    Callback = function(Value)
+        AuraFarmingEnabled = Value
+
+        if Value and LocalPlayer.Character then
+            activateAuraFarming(LocalPlayer.Character)
+        else
+            deactivateAuraFarming(LocalPlayer.Character)
+        end
+    end,
+})
+
+-- ✅ Effekt aktivieren
+function activateAuraFarming(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+
+    -- 🔴 Licht
+    if not head:FindFirstChild("AuraLight") then
+        local light = Instance.new("PointLight")
+        light.Name = "AuraLight"
+        light.Color = Color3.new(1, 0, 0)
+        light.Brightness = 7
+        light.Range = 14
+        light.Shadows = true
+        light.Parent = head
+    end
+
+    -- 🔊 Sound
+    if not head:FindFirstChild("AuraSound") then
+        local sound = Instance.new("Sound")
+        sound.Name = "AuraSound"
+        sound.SoundId = "rbxassetid://129098116998483" -- Deine Sound ID
+        sound.Volume = 1
+        sound.Looped = false
+        sound.Parent = head
+        sound:Play()
+    end
+
+    -- 🌌 Rote Atmosphäre
+    if not Lighting:FindFirstChild("AuraAtmosphere") then
+        local atmosphere = Instance.new("Atmosphere")
+        atmosphere.Name = "AuraAtmosphere"
+        atmosphere.Density = 0.4
+        atmosphere.Offset = 0.25
+        atmosphere.Color = Color3.new(1, 0, 0)
+        atmosphere.Decay = Color3.new(0.6, 0, 0)
+        atmosphere.Parent = Lighting
+    end
+
+    -- 🌃 Himmel rot färben
+    Lighting.Ambient = Color3.new(0.4, 0, 0)
+    Lighting.OutdoorAmbient = Color3.new(0.7, 0, 0)
+    Lighting.FogColor = Color3.new(0.8, 0.1, 0.1)
+    Lighting.FogStart = 0
+    Lighting.FogEnd = 200
+    Lighting.Brightness = 0.5
+end
+
+-- ❌ Effekt deaktivieren
+function deactivateAuraFarming(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+
+    if head:FindFirstChild("AuraLight") then
+        head.AuraLight:Destroy()
+    end
+    if head:FindFirstChild("AuraSound") then
+        head.AuraSound:Stop()
+        head.AuraSound:Destroy()
+    end
+    if Lighting:FindFirstChild("AuraAtmosphere") then
+        Lighting.AuraAtmosphere:Destroy()
+    end
+
+    -- 🌈 Lighting zurücksetzen (falls du Defaults hast, kannst du die hier anpassen)
+    Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+    Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+    Lighting.FogColor = Color3.new(1, 1, 1)
+    Lighting.FogStart = 1000
+    Lighting.FogEnd = 100000
+    Lighting.Brightness = 1
+end
+
+-- 🔁 Für Respawns
+LocalPlayer.CharacterAdded:Connect(function(char)
+    if AuraFarmingEnabled then
+        activateAuraFarming(char)
+    else
+        deactivateAuraFarming(char)
+    end
+end)
