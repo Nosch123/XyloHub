@@ -1,11 +1,11 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Nosch Hub",
+   Name = "NEBULA HUB",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Nosch HUB",
-   LoadingSubtitle = "by Nosch",
-   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   LoadingTitle = "NEBULA HUB",
+   LoadingSubtitle = "FREE",
+   ShowText = "NEBULA HUB", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
@@ -188,5 +188,65 @@ end)
 
 
 
+   end,
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local aimbotConnection
+
+local function getClosestTarget()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local headPos, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
+            if onScreen then
+                local mousePos = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+                local targetPos = Vector2.new(headPos.X, headPos.Y)
+                local distance = (mousePos - targetPos).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = player
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+local function startAimbot()
+    if aimbotConnection then aimbotConnection:Disconnect() end
+    aimbotConnection = RunService.RenderStepped:Connect(function()
+        local target = getClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.Head.Position)
+        end
+    end)
+end
+
+local function stopAimbot()
+    if aimbotConnection then
+        aimbotConnection:Disconnect()
+        aimbotConnection = nil
+    end
+end
+
+local Toggle = MainTab:CreateToggle({
+   Name = "Aimbot",
+   CurrentValue = false,
+   Flag = "Toggle1",
+   Callback = function(Value)
+       if Value then
+           startAimbot()
+       else
+           stopAimbot()
+       end
    end,
 })
