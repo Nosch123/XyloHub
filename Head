@@ -1,11 +1,11 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "NEBULA HUB",
+   Name = "XYLO HUB",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "NEBULA HUB",
+   LoadingTitle = "XYLO HUB",
    LoadingSubtitle = "FREE",
-   ShowText = "NEBULA HUB", -- for mobile users to unhide rayfield, change if you'd like
+   ShowText = "XYLO HUB", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
@@ -27,7 +27,7 @@ local Window = Rayfield:CreateWindow({
 
    KeySystem = true, -- Set this to true to use our key system
    KeySettings = {
-      Title = "NEBULA KEY",
+      Title = "XYLO KEY",
       Subtitle = "Key System",
       Note = "KEY IN https://discord.gg/c5uVTcHtzJ", -- Use this to tell the user how to get a key
       FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
@@ -250,3 +250,4 @@ local Toggle = MainTab:CreateToggle({
        end
    end,
 })
+
