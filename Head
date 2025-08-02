@@ -115,176 +115,152 @@ Humanoid.WalkSpeed = 16
    end,
 })
 
-local Toggle = Tab:CreateToggle({
-   Name = "ESP Toggle",
+local Toggle = MainTab:CreateToggle({
+   Name = "ESP",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local Toggle = MainTab:CreateToggle({
+   Name = "ESP",
    CurrentValue = false,
    Flag = "Toggle1",
    Callback = function(Value)
-       local Players = game:GetService("Players")
-       local RunService = game:GetService("RunService")
-       local LocalPlayer = Players.LocalPlayer
-       local Camera = workspace.CurrentCamera
-
-       local ESPs = {}
-       local lineFrames = {}
-
-       local function createESP(player)
-           if player == LocalPlayer then return end
-           if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-
-           local rootPart = player.Character.HumanoidRootPart
-
-           local billboardGui = Instance.new("BillboardGui")
-           billboardGui.Name = "ESPBillboard"
-           billboardGui.Adornee = rootPart
-           billboardGui.Size = UDim2.new(0, 100, 0, 100)
-           billboardGui.StudsOffset = Vector3.new(0, 3, 0)
-           billboardGui.AlwaysOnTop = true
-           billboardGui.Parent = rootPart
-
-           local boxFrame = Instance.new("Frame", billboardGui)
-           boxFrame.Name = "ESPBox"
-           boxFrame.Size = UDim2.new(1, 0, 1, 0)
-           boxFrame.BackgroundTransparency = 1
-           boxFrame.BorderColor3 = Color3.new(0, 1, 0)
-           boxFrame.BorderSizePixel = 2
-
-           local nameLabel = Instance.new("TextLabel", billboardGui)
-           nameLabel.Size = UDim2.new(1, 0, 0, 20)
-           nameLabel.Position = UDim2.new(0, 0, 1, 0)
-           nameLabel.BackgroundTransparency = 1
-           nameLabel.TextColor3 = Color3.new(1, 1, 1)
-           nameLabel.TextStrokeTransparency = 0
-           nameLabel.TextScaled = true
-           nameLabel.Font = Enum.Font.SourceSansBold
-           nameLabel.Text = player.Name
-
-           ESPs[player] = {Billboard = billboardGui, Box = boxFrame, NameLabel = nameLabel}
-       end
-
-       local function removeESP(player)
-           if ESPs[player] then
-               if ESPs[player].Billboard then
-                   ESPs[player].Billboard:Destroy()
+      -- Beim Aktivieren ESP starten
+      if Value then
+         for _, player in pairs(Players:GetPlayers()) do
+            createESP(player)
+         end
+         Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function()
+               if Toggle:Get() then -- nur wenn Toggle an ist
+                  createESP(player)
                end
-               ESPs[player] = nil
-           end
-       end
-
-       local function updateLines()
-           local screenGui = LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("ESP_Lines")
-           if not screenGui then
-               screenGui = Instance.new("ScreenGui")
-               screenGui.Name = "ESP_Lines"
-               screenGui.ResetOnSpawn = false
-               screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-           end
-
-           for _, line in pairs(lineFrames) do
-               line:Destroy()
-           end
-           lineFrames = {}
-
-           for player, espData in pairs(ESPs) do
-               if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                   local playerPos, onScreenPlayer = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
-                   local localPos, onScreenLocal = Camera:WorldToViewportPoint(LocalPlayer.Character.HumanoidRootPart.Position)
-                   if onScreenPlayer and onScreenLocal then
-                       local line = Instance.new("Frame")
-                       line.BackgroundColor3 = Color3.new(0, 1, 0)
-                       line.BorderSizePixel = 0
-                       line.AnchorPoint = Vector2.new(0.5, 0.5)
-                       line.Parent = screenGui
-
-                       local dist = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                       local thickness = math.clamp(10 / dist, 1, 4)
-
-                       local from = Vector2.new(localPos.X, localPos.Y)
-                       local to = Vector2.new(playerPos.X, playerPos.Y)
-                       local direction = (to - from)
-                       local length = direction.Magnitude
-                       local angle = math.deg(math.atan2(direction.Y, direction.X))
-
-                       line.Size = UDim2.new(0, length, 0, thickness)
-                       line.Position = UDim2.new(0, from.X, 0, from.Y)
-                       line.Rotation = angle
-                       table.insert(lineFrames, line)
-                   end
-               end
-           end
-       end
-
-       local playerAddedConnection
-       local characterAddedConnections = {}
-       local renderStepName = "ESP_Update"
-
-       local function enableESP()
-           for _, player in pairs(Players:GetPlayers()) do
-               createESP(player)
-               characterAddedConnections[player] = player.CharacterAdded:Connect(function()
-                   createESP(player)
-               end)
-               player.CharacterRemoving:Connect(function()
-                   removeESP(player)
-               end)
-           end
-
-           playerAddedConnection = Players.PlayerAdded:Connect(function(player)
-               createESP(player)
-               characterAddedConnections[player] = player.CharacterAdded:Connect(function()
-                   createESP(player)
-               end)
-               player.CharacterRemoving:Connect(function()
-                   removeESP(player)
-               end)
-           end)
-
-           RunService:BindToRenderStep(renderStepName, Enum.RenderPriority.Camera.Value + 1, function()
-               if Toggle.CurrentValue then -- Falls Toggle manuell auf false gesetzt wird, stoppen wir automatisch
-                   updateLines()
-               else
-                   -- Wenn Toggle deaktiviert wurde während RenderStep läuft, ESP stoppen
-                   Toggle:Set(false)
-               end
-           end)
-       end
-
-       local function disableESP()
-           if playerAddedConnection then
-               playerAddedConnection:Disconnect()
-               playerAddedConnection = nil
-           end
-           for player, conn in pairs(characterAddedConnections) do
-               if conn then conn:Disconnect() end
-           end
-           characterAddedConnections = {}
-
-           for player, _ in pairs(ESPs) do
-               removeESP(player)
-           end
-           ESPs = {}
-
-           local screenGui = LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("ESP_Lines")
-           if screenGui then
-               screenGui:Destroy()
-           end
-
-           RunService:UnbindFromRenderStep(renderStepName)
-       end
-
-       if Value then
-           enableESP()
-       else
-           disableESP()
-       end
+            end)
+         end)
+      else
+         -- Beim Deaktivieren alle ESPs entfernen
+         for _, player in pairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Head") then
+               local head = player.Character.Head
+               local gui = head:FindFirstChildWhichIsA("BillboardGui")
+               if gui then gui:Destroy() end
+               local box = head:FindFirstChild("ESPBox")
+               if box then box:Destroy() end
+               local line = head:FindFirstChild("ESPLine")
+               if line then line:Destroy() end
+            end
+         end
+      end
    end,
 })
 
--- Beispiel wie du das Toggle programmatisch ausschaltest:
--- Toggle:Set(false)
+function createESP(player)
+    if player == LocalPlayer then return end
+    if not player.Character or not player.Character:FindFirstChild("Head") then return end
 
+    local head = player.Character.Head
 
+    -- Falls schon vorhanden, nicht nochmal erstellen
+    if head:FindFirstChild("ESPBillboard") then return end
 
+    -- BillboardGui für Namen, Team, Distanz
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "ESPBillboard"
+    billboardGui.Size = UDim2.new(0, 150, 0, 70)
+    billboardGui.Adornee = head
+    billboardGui.AlwaysOnTop = true
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+
+    local nameLabel = Instance.new("TextLabel", billboardGui)
+    nameLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.Text = player.Name
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.SourceSansBold
+
+    local distanceLabel = Instance.new("TextLabel", billboardGui)
+    distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0.4, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.TextColor3 = Color3.new(1, 1, 0)
+    distanceLabel.TextStrokeTransparency = 0
+    distanceLabel.TextScaled = true
+    distanceLabel.Font = Enum.Font.SourceSans
+
+    local teamLabel = Instance.new("TextLabel", billboardGui)
+    teamLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    teamLabel.Position = UDim2.new(0, 0, 0.7, 0)
+    teamLabel.BackgroundTransparency = 1
+    teamLabel.TextStrokeTransparency = 0
+    teamLabel.TextScaled = true
+    teamLabel.Font = Enum.Font.SourceSansBold
+
+    if player.Team then
+        teamLabel.Text = "Team: " .. player.Team.Name
+        teamLabel.TextColor3 = player.Team.TeamColor.Color
+    else
+        teamLabel.Text = "Team: None"
+        teamLabel.TextColor3 = Color3.new(1, 1, 1)
+    end
+
+    billboardGui.Parent = head
+
+    -- Grüne Box um Spieler (4 Eck)
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = "ESPBox"
+    box.Adornee = player.Character:FindFirstChild("HumanoidRootPart") or head
+    box.AlwaysOnTop = true
+    box.ZIndex = 5
+    box.Size = Vector3.new(4, 6, 2)
+    box.Color3 = Color3.new(0, 1, 0)
+    box.Transparency = 0.5
+    box.Parent = head
+
+    -- Linie vom LocalPlayer zum Spieler
+    local line = Instance.new("Beam")
+    line.Name = "ESPLine"
+
+    local attachment0 = Instance.new("Attachment")
+    attachment0.Name = "Attachment0"
+    attachment0.Parent = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or nil
+
+    local attachment1 = Instance.new("Attachment")
+    attachment1.Name = "Attachment1"
+    attachment1.Parent = player.Character:FindFirstChild("HumanoidRootPart") or head
+
+    if attachment0 and attachment1 then
+        line.Attachment0 = attachment0
+        line.Attachment1 = attachment1
+        line.FaceCamera = true
+        line.Width0 = 0.1
+        line.Width1 = 0.1
+        line.Color = ColorSequence.new(Color3.new(0, 1, 0))
+        line.Parent = attachment0
+    end
+
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        if not player.Character or not player.Character.Parent or not LocalPlayer.Character or not LocalPlayer.Character.Parent then
+            connection:Disconnect()
+            if billboardGui then billboardGui:Destroy() end
+            if box then box:Destroy() end
+            if line then line:Destroy() end
+            return
+        end
+
+        local dist = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+        distanceLabel.Text = ("Distance: %.1f studs"):format(dist)
+    end)
+end
+
+   end,
+})
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
