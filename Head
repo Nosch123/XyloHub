@@ -115,59 +115,20 @@ Humanoid.WalkSpeed = 16
    end,
 })
 
-local Toggle = MainTab:CreateToggle({
-   Name = "ESP",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-local Toggle = MainTab:CreateToggle({
-   Name = "ESP",
-   CurrentValue = false,
-   Flag = "Toggle1",
-   Callback = function(Value)
-      -- Beim Aktivieren ESP starten
-      if Value then
-         for _, player in pairs(Players:GetPlayers()) do
-            createESP(player)
-         end
-         Players.PlayerAdded:Connect(function(player)
-            player.CharacterAdded:Connect(function()
-               if Toggle:Get() then -- nur wenn Toggle an ist
-                  createESP(player)
-               end
-            end)
-         end)
-      else
-         -- Beim Deaktivieren alle ESPs entfernen
-         for _, player in pairs(Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("Head") then
-               local head = player.Character.Head
-               local gui = head:FindFirstChildWhichIsA("BillboardGui")
-               if gui then gui:Destroy() end
-               local box = head:FindFirstChild("ESPBox")
-               if box then box:Destroy() end
-               local line = head:FindFirstChild("ESPLine")
-               if line then line:Destroy() end
-            end
-         end
-      end
-   end,
-})
+local activeESPs = {} -- speichert ESP-GUI & Connections pro Player
 
-function createESP(player)
+local function createESP(player)
     if player == LocalPlayer then return end
-    if not player.Character or not player.Character:FindFirstChild("Head") then return end
+    if activeESPs[player] then return end -- Schon ESP aktiv
 
+    if not player.Character or not player.Character:FindFirstChild("Head") then return end
     local head = player.Character.Head
 
-    -- Falls schon vorhanden, nicht nochmal erstellen
-    if head:FindFirstChild("ESPBillboard") then return end
-
-    -- BillboardGui für Namen, Team, Distanz
+    -- BillboardGui
     local billboardGui = Instance.new("BillboardGui")
     billboardGui.Name = "ESPBillboard"
     billboardGui.Size = UDim2.new(0, 150, 0, 70)
@@ -211,7 +172,7 @@ function createESP(player)
 
     billboardGui.Parent = head
 
-    -- Grüne Box um Spieler (4 Eck)
+    -- Box
     local box = Instance.new("BoxHandleAdornment")
     box.Name = "ESPBox"
     box.Adornee = player.Character:FindFirstChild("HumanoidRootPart") or head
@@ -222,85 +183,91 @@ function createESP(player)
     box.Transparency = 0.5
     box.Parent = head
 
-    -- Linie vom LocalPlayer zum Spieler
+    -- Linie
     local line = Instance.new("Beam")
     line.Name = "ESPLine"
 
     local attachment0 = Instance.new("Attachment")
     attachment0.Name = "Attachment0"
-    attachment0.Parent = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or nil
+    local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not localHRP then return end
+    attachment0.Parent = localHRP
 
     local attachment1 = Instance.new("Attachment")
     attachment1.Name = "Attachment1"
     attachment1.Parent = player.Character:FindFirstChild("HumanoidRootPart") or head
 
-    if attachment0 and attachment1 then
-        line.Attachment0 = attachment0
-        line.Attachment1 = attachment1
-        line.FaceCamera = true
-        line.Width0 = 0.1
-        line.Width1 = 0.1
-        line.Color = ColorSequence.new(Color3.new(0, 1, 0))
-        line.Parent = attachment0
-    end
+    line.Attachment0 = attachment0
+    line.Attachment1 = attachment1
+    line.FaceCamera = true
+    line.Width0 = 0.1
+    line.Width1 = 0.1
+    line.Color = ColorSequence.new(Color3.new(0, 1, 0))
+    line.Parent = attachment0
 
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
+    -- Update Distanz
+    local conn = RunService.RenderStepped:Connect(function()
         if not player.Character or not player.Character.Parent or not LocalPlayer.Character or not LocalPlayer.Character.Parent then
-            connection:Disconnect()
+            conn:Disconnect()
             if billboardGui then billboardGui:Destroy() end
             if box then box:Destroy() end
             if line then line:Destroy() end
+            activeESPs[player] = nil
             return
         end
-
         local dist = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
         distanceLabel.Text = ("Distance: %.1f studs"):format(dist)
     end)
+
+    activeESPs[player] = {
+        Billboard = billboardGui,
+        Box = box,
+        Line = line,
+        Connection = conn,
+        Attachments = {attachment0, attachment1}
+    }
 end
 
-   end,
-})
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local aimbotConnection
-
-local function getClosestTarget()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
-
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-            local headPos, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
-            if onScreen then
-                local mousePos = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-                local targetPos = Vector2.new(headPos.X, headPos.Y)
-                local distance = (mousePos - targetPos).Magnitude
-                if distance < shortestDistance then
-                    shortestDistance = distance
-                    closestPlayer = player
-                end
-            end
+local function removeESP(player)
+    local esp = activeESPs[player]
+    if esp then
+        esp.Connection:Disconnect()
+        if esp.Billboard then esp.Billboard:Destroy() end
+        if esp.Box then esp.Box:Destroy() end
+        if esp.Line then esp.Line:Destroy() end
+        for _, attach in pairs(esp.Attachments) do
+            if attach then attach:Destroy() end
         end
+        activeESPs[player] = nil
     end
-
-    return closestPlayer
 end
 
-local function startAimbot()
-    if aimbotConnection then aimbotConnection:Disconnect() end
-    aimbotConnection = RunService.RenderStepped:Connect(function()
-        local target = getClosestTarget()
-        if target and target.Character and target.Character:FindFirstChild("Head") then
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.Head.Position)
+-- Einmalige Events außerhalb Toggle
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if Toggle:Get() then
+            createESP(player)
         end
     end)
-end
+end)
+
+-- Toggle
+local Toggle = MainTab:CreateToggle({
+   Name = "ESP",
+   CurrentValue = false,
+   Flag = "Toggle1",
+   Callback = function(Value)
+      if Value then
+         for _, player in pairs(Players:GetPlayers()) do
+            createESP(player)
+         end
+      else
+         for _, player in pairs(Players:GetPlayers()) do
+            removeESP(player)
+         end
+      end
+   end,
+})
 
 local function stopAimbot()
     if aimbotConnection then
