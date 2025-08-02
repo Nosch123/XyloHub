@@ -116,95 +116,149 @@ Humanoid.WalkSpeed = 16
 })
 
 local Button = MainTab:CreateButton({
-   Name = "ESP",
-   Callback = function()
-   local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+    Name = "ESP",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local Camera = workspace.CurrentCamera
+        local LocalPlayer = Players.LocalPlayer
 
-local LocalPlayer = Players.LocalPlayer
+        -- Drawing-Objekte für Box & Linie speichern
+        local ESPObjects = {}
 
-local function createESP(player)
-    if player == LocalPlayer then return end  -- Eigener Spieler wird ausgelassen
-    if not player.Character or not player.Character:FindFirstChild("Head") then return end
-
-    local head = player.Character.Head
-
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Size = UDim2.new(0, 150, 0, 70)
-    billboardGui.Adornee = head
-    billboardGui.AlwaysOnTop = true
-    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
-
-    local nameLabel = Instance.new("TextLabel", billboardGui)
-    nameLabel.Size = UDim2.new(1, 0, 0.4, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.TextColor3 = Color3.new(1, 1, 1)
-    nameLabel.TextStrokeTransparency = 0
-    nameLabel.Text = player.Name
-    nameLabel.TextScaled = true
-    nameLabel.Font = Enum.Font.SourceSansBold
-
-    local distanceLabel = Instance.new("TextLabel", billboardGui)
-    distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    distanceLabel.Position = UDim2.new(0, 0, 0.4, 0)
-    distanceLabel.BackgroundTransparency = 1
-    distanceLabel.TextColor3 = Color3.new(1, 1, 0)
-    distanceLabel.TextStrokeTransparency = 0
-    distanceLabel.TextScaled = true
-    distanceLabel.Font = Enum.Font.SourceSans
-
-    local teamLabel = Instance.new("TextLabel", billboardGui)
-    teamLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    teamLabel.Position = UDim2.new(0, 0, 0.7, 0)
-    teamLabel.BackgroundTransparency = 1
-    teamLabel.TextStrokeTransparency = 0
-    teamLabel.TextScaled = true
-    teamLabel.Font = Enum.Font.SourceSansBold
-
-    -- Team Text & Color
-    if player.Team then
-        teamLabel.Text = "Team: " .. player.Team.Name
-        teamLabel.TextColor3 = player.Team.TeamColor.Color
-    else
-        teamLabel.Text = "Team: None"
-        teamLabel.TextColor3 = Color3.new(1, 1, 1)
-    end
-
-    billboardGui.Parent = head
-
-    -- Update Entfernung jede Frame
-    local RunService = game:GetService("RunService")
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-            distanceLabel.Text = ("Distance: %.1f studs"):format(dist)
-        else
-            distanceLabel.Text = "Distance: N/A"
+        -- Funktion für Box erstellen
+        local function createBox()
+            local box = Drawing.new("Square")
+            box.Color = Color3.fromRGB(0, 255, 0)
+            box.Thickness = 2
+            box.Filled = false
+            box.Visible = false
+            return box
         end
 
-        -- Disconnect wenn der Spieler stirbt oder verschwindet
-        if not player.Character or not player.Character.Parent then
-            connection:Disconnect()
+        -- Funktion für Linie erstellen
+        local function createLine()
+            local line = Drawing.new("Line")
+            line.Color = Color3.fromRGB(0, 255, 0)
+            line.Thickness = 1.5
+            line.Visible = false
+            return line
         end
-    end)
-end
 
-for _, player in pairs(Players:GetPlayers()) do
-    createESP(player)
-end
+        -- ESP erstellen (BillboardGui + Box + Linie)
+        local function createESP(player)
+            if player == LocalPlayer then return end
+            if not player.Character or not player.Character:FindFirstChild("Head") then return end
 
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        createESP(player)
-    end)
-end)
+            local head = player.Character.Head
 
+            -- BillboardGui wie gehabt
+            local billboardGui = Instance.new("BillboardGui")
+            billboardGui.Size = UDim2.new(0, 150, 0, 70)
+            billboardGui.Adornee = head
+            billboardGui.AlwaysOnTop = true
+            billboardGui.StudsOffset = Vector3.new(0, 2, 0)
 
+            local nameLabel = Instance.new("TextLabel", billboardGui)
+            nameLabel.Size = UDim2.new(1, 0, 0.4, 0)
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.TextColor3 = Color3.new(1, 1, 1)
+            nameLabel.TextStrokeTransparency = 0
+            nameLabel.Text = player.Name
+            nameLabel.TextScaled = true
+            nameLabel.Font = Enum.Font.SourceSansBold
 
+            local distanceLabel = Instance.new("TextLabel", billboardGui)
+            distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
+            distanceLabel.Position = UDim2.new(0, 0, 0.4, 0)
+            distanceLabel.BackgroundTransparency = 1
+            distanceLabel.TextColor3 = Color3.new(1, 1, 0)
+            distanceLabel.TextStrokeTransparency = 0
+            distanceLabel.TextScaled = true
+            distanceLabel.Font = Enum.Font.SourceSans
 
-   end,
+            local teamLabel = Instance.new("TextLabel", billboardGui)
+            teamLabel.Size = UDim2.new(1, 0, 0.3, 0)
+            teamLabel.Position = UDim2.new(0, 0, 0.7, 0)
+            teamLabel.BackgroundTransparency = 1
+            teamLabel.TextStrokeTransparency = 0
+            teamLabel.TextScaled = true
+            teamLabel.Font = Enum.Font.SourceSansBold
+
+            if player.Team then
+                teamLabel.Text = "Team: " .. player.Team.Name
+                teamLabel.TextColor3 = player.Team.TeamColor.Color
+            else
+                teamLabel.Text = "Team: None"
+                teamLabel.TextColor3 = Color3.new(1, 1, 1)
+            end
+
+            billboardGui.Parent = head
+
+            -- Box und Linie erstellen und speichern
+            local box = createBox()
+            local line = createLine()
+            ESPObjects[player] = {Box = box, Line = line, Billboard = billboardGui}
+
+            -- Update Loop
+            local connection
+            connection = RunService.RenderStepped:Connect(function()
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local rootPos = player.Character.HumanoidRootPart.Position
+                    local headPos = head.Position
+                    local localRootPos = LocalPlayer.Character.HumanoidRootPart.Position
+
+                    -- Distanz aktualisieren
+                    local dist = (rootPos - localRootPos).Magnitude
+                    distanceLabel.Text = ("Distance: %.1f studs"):format(dist)
+
+                    -- Projection für Box und Linie
+                    local rootPosScreen, onScreenRoot = Camera:WorldToViewportPoint(rootPos)
+                    local headPosScreen, onScreenHead = Camera:WorldToViewportPoint(headPos)
+                    local localPosScreen, onScreenLocal = Camera:WorldToViewportPoint(localRootPos)
+
+                    if onScreenRoot and onScreenHead and onScreenLocal then
+                        -- Box-Höhe & Breite basierend auf Spielergröße
+                        local boxHeight = math.abs(headPosScreen.Y - rootPosScreen.Y)
+                        local boxWidth = boxHeight / 2
+
+                        -- Box Position & Größe setzen
+                        box.Size = boxHeight
+                        box.Position = Vector2.new(rootPosScreen.X - boxWidth/2, rootPosScreen.Y - boxHeight)
+                        box.Visible = true
+
+                        -- Linie von Spieler zu dir
+                        line.From = Vector2.new(localPosScreen.X, localPosScreen.Y)
+                        line.To = Vector2.new(rootPosScreen.X, rootPosScreen.Y)
+                        line.Visible = true
+                    else
+                        box.Visible = false
+                        line.Visible = false
+                    end
+                else
+                    distanceLabel.Text = "Distance: N/A"
+                    -- Spieler tot oder weg → alles ausblenden & Verbindung trennen
+                    box.Visible = false
+                    line.Visible = false
+                    connection:Disconnect()
+                end
+            end)
+        end
+
+        -- Bestehende Spieler ESP erstellen
+        for _, player in pairs(Players:GetPlayers()) do
+            createESP(player)
+        end
+
+        -- Neue Spieler und Respawn ESP erstellen
+        Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function()
+                createESP(player)
+            end)
+        end)
+    end,
 })
+
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
