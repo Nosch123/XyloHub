@@ -100,6 +100,42 @@ end)
    end,
 })
 
+local Button = Tab:CreateButton({
+   Name = "Button Example",
+   Callback = function()
+   local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function enforceWalkSpeed(character)
+    local Humanoid = character:WaitForChild("Humanoid")
+
+    -- Direktes Reset auf normalen Speed
+    Humanoid.WalkSpeed = 16
+
+    -- Überwachung (Anti-Cheat Test)
+    RunService.Stepped:Connect(function()
+        if Humanoid.WalkSpeed ~= 16 then
+            warn("[Anti-Cheat Test] WalkSpeed manipuliert! Aktueller Wert:", Humanoid.WalkSpeed)
+            Humanoid.WalkSpeed = 16
+        end
+    end)
+end
+
+-- Initial bei Charakter-Spawn
+if LocalPlayer.Character then
+    enforceWalkSpeed(LocalPlayer.Character)
+end
+
+-- Automatisch bei Respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+    enforceWalkSpeed(char)
+end)
+
+   end,
+})
+
 local Button = MainTab:CreateButton({
    Name = "ESP",
    Callback = function()
