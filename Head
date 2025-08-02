@@ -251,38 +251,5 @@ local Toggle = MainTab:CreateToggle({
    end,
 })
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-
-local InvincibilityEnabled = false
-
--- 🔘 Toggle GUI Element
-local Toggle = MainTab:CreateToggle({
-   Name = "Invincibility",
-   CurrentValue = false,
-   Flag = "ToggleInvincibility",
-   Callback = function(Value)
-      InvincibilityEnabled = Value
-   end,
-})
-
--- 🔁 On Respawn: Reconnect Humanoid
-LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-    Humanoid = char:WaitForChild("Humanoid")
-end)
-
--- 🛡️ Unsterblichkeits-Loop
-RunService.Heartbeat:Connect(function()
-    if InvincibilityEnabled and Humanoid then
-        Humanoid.Health = Humanoid.MaxHealth
-    end
-end)
-
--- ✖️ Toggle manuell aus (wenn du willst)
--- Toggle:Set(false)
 
