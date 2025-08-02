@@ -261,7 +261,7 @@ local Humanoid = Character:WaitForChild("Humanoid")
 local InvincibilityEnabled = false
 
 -- 🔘 Toggle GUI Element
-local Toggle = Tab:CreateToggle({
+local Toggle = MainTab:CreateToggle({
    Name = "Invincibility",
    CurrentValue = false,
    Flag = "ToggleInvincibility",
