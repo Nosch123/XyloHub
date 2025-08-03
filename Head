@@ -304,7 +304,7 @@ local function getClosestTarget()
 end
 
 local Toggle = MainTab:CreateToggle({
-    Name = "Aimbot (Aggressiv)",
+    Name = "Aimbot",
     CurrentValue = false,
     Flag = "AB",
     Callback = function(Value)
