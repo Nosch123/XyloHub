@@ -269,24 +269,64 @@ local Toggle = MainTab:CreateToggle({
    end,
 })
 
-local function stopAimbot()
-    if aimbotConnection then
-        aimbotConnection:Disconnect()
-        aimbotConnection = nil
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local AIM_RADIUS = 150
+local AIM_SMOOTHNESS = 0.2
+
+local aiming = false
+local connection
+
+local function getClosestTarget()
+    local closestTarget = nil
+    local shortestDistance = AIM_RADIUS
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local targetHRP = player.Character:FindFirstChild("HumanoidRootPart")
+            if targetHRP then
+                local distance = (targetHRP.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestTarget = targetHRP
+                end
+            end
+        end
     end
+    return closestTarget
 end
 
 local Toggle = MainTab:CreateToggle({
-   Name = "Aimbot",
-   CurrentValue = false,
-   Flag = "Toggle1",
-   Callback = function(Value)
-       if Value then
-           startAimbot()
-       else
-           stopAimbot()
-       end
-   end,
+    Name = "Aimbot",
+    CurrentValue = false,
+    Flag = "AB",
+    Callback = function(Value)
+        aiming = Value
+
+        if aiming then
+            connection = RunService.RenderStepped:Connect(function()
+                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+
+                local target = getClosestTarget()
+                if target then
+                    local camPos = Camera.CFrame.Position
+                    local direction = (target.Position - camPos).Unit
+                    local targetCFrame = CFrame.new(camPos, camPos + direction)
+
+                    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, AIM_SMOOTHNESS)
+                end
+            end)
+        else
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+        end
+    end,
 })
+
 
 
