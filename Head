@@ -60,7 +60,7 @@ local SpeedMultiplier = 1.0 -- wird sofort vom Slider überschrieben
 -- // Slider Setup \\ --
 local Slider = MainTab:CreateSlider({ 
     Name = "Walkspeed", 
-    Range = {1, 1000}, -- 1x = normal, 2x = doppelt so schnell usw.
+    Range = {1, 20}, -- 1x = normal, 2x = doppelt so schnell usw.
     Increment = 0.1,
     Suffix = "x",
     CurrentValue = 1.0,
