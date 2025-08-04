@@ -1,10 +1,10 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "XYLO HUB",
+   Name = "XYLO HUB V.014",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "XYLO HUB",
-   LoadingSubtitle = "FREE",
+   LoadingSubtitle = "BETA",
    ShowText = "XYLO HUB", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -330,45 +330,6 @@ local Toggle = MainTab:CreateToggle({
     end,
 })
 
-local Toggle = MainTab:CreateToggle({ 
-    Name = "Fly (Not recommended)", 
-    CurrentValue = false,
-    Flag = "FNR",
-    Callback = function(Value)
-        local RunService = game:GetService("RunService")
-        local Players = game:GetService("Players")
-        local player = Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-
-        local flying = false
-        local speed = 60
-        local conn
-
-        local function startFly()
-            if flying then return end
-            flying = true
-            conn = RunService.Heartbeat:Connect(function()
-                if flying then
-                    local dir = workspace.CurrentCamera.CFrame.LookVector
-                    hrp.Velocity = dir * speed
-                end
-            end)
-        end
-
-        local function stopFly()
-            flying = false
-            if conn then conn:Disconnect() end
-            hrp.Velocity = Vector3.zero
-        end
-
-        if Value then
-            startFly()
-        else
-            stopFly()
-        end
-    end,
-})
 
 
 
