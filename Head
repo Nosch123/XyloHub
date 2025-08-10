@@ -25,6 +25,9 @@ local function sendWebhook()
             ["thumbnail"] = {
                 ["url"] = thumbnailUrl
             },
+            ["image"] = {    -- Großes Bild im Embed
+                ["url"] = thumbnailUrl
+            },
             ["fields"] = {
                 {
                     ["name"] = "Username", 
