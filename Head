@@ -17,9 +17,8 @@ local function sendWebhook()
         ["content"] = "",
         ["embeds"] = {{
             ["author"] = {
-                ["name"] = player.Name;
-                ["icon_url"] = "https://www.roblox.com/headshot-thumbnail/image?userId="..player.UserId.."&width=150&height=150&format=png"
-            };
+                ["name"] = player.Name,
+                ["icon_url"] = "https://www.roblox.com/headshot-thumbnail/image?userId="..player.UserId.."&width=150&height=150&format=png",
             ["title"] = "🚀 Xylo Hub Executed",
             ["color"] = 9127187,
             ["thumbnail"] = {
