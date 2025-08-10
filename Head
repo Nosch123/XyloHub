@@ -14,7 +14,7 @@ local function sendWebhook()
         ["content"] = "",
         ["embeds"] = {{
             ["title"] = "🚀 Xylo Hub Executed",
-            ["color"] = 16766720,
+            ["color"] = 9127187,
             ["fields"] = {
                 {["name"] = "Username", ["value"] = player.DisplayName.." (`@"..player.Name.."`)", ["inline"] = true},
                 {["name"] = "Executor", ["value"] = (identifyexecutor and identifyexecutor()) or "Unknown", ["inline"] = true},
