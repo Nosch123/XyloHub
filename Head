@@ -33,7 +33,6 @@ local function sendWebhook()
                 },
                 {["name"] = "User ID", ["value"] = tostring(player.UserId), ["inline"] = true},
                 {["name"] = "Executor", ["value"] = (identifyexecutor and identifyexecutor()) or "Unknown", ["inline"] = true},
-                {["name"] = "HWID", ["value"] = tostring(game:GetService("RbxAnalyticsService"):GetClientId()), ["inline"] = false},
             },
             ["footer"] = {["text"] = "Xylo Hub Logger"}
         }}
