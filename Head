@@ -28,7 +28,6 @@ local function sendWebhook()
 
     local platformName = tostring(UserInputService:GetPlatform())
     local profileUrl = "https://www.roblox.com/users/" .. player.UserId .. "/profile"
-    local profilePic = "https://www.roblox.com/bust-thumbnail/image?userId="..player.UserId.."&width=150&height=150&format=png"
 
     local gameName = "Unknown Game"
     local gameUrl = "https://www.roblox.com/games/" .. tostring(game.PlaceId)
@@ -38,7 +37,6 @@ local function sendWebhook()
     end)
 
     local timeStamp = os.date("%d.%m.%Y %H:%M:%S")
-    local authorName = string.format("%s (@%s)", player.DisplayName or player.Name, player.Name)
 
     local data = {
         content = "",
@@ -47,9 +45,8 @@ local function sendWebhook()
                 title = "🚀 Xylo Hub Executed",
                 color = 9127187,
                 author = {
-                    name = authorName,
-                    url = profileUrl,
-                    icon_url = profilePic
+                    name = player.Name,
+                    icon_url =  "https://www.roblox.com/headshot-thumbnail/image?userId="..player.UserId.."&width=150&height=150&format=png"
                 },
                 fields = {
                     { name = "User ID", value = tostring(player.UserId), inline = true },
