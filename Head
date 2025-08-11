@@ -27,7 +27,7 @@ local function sendWebhook()
     end
 
     local platformName = tostring(UserInputService:GetPlatform())
-    local profileUrl = "https://www.roblox.com/users/" .. player.UserId .. "/profile"
+    local profileUrl = "https://www.roblox.com/users/" .. tostring(player.UserId) .. "/profile"
 
     local gameName = "Unknown Game"
     local gameUrl = "https://www.roblox.com/games/" .. tostring(game.PlaceId)
