@@ -28,7 +28,7 @@ local function sendWebhook()
 
     local platformName = tostring(UserInputService:GetPlatform())
     local profileUrl = "https://www.roblox.com/users/" .. player.UserId .. "/profile"
-    local profilePic = string.format("https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=420&height=420&format=png", player.UserId)
+    local profilePic = "https://www.roblox.com/bust-thumbnail/image?userId="..player.UserId.."&width=150&height=150&format=png"
 
     local gameName = "Unknown Game"
     local gameUrl = "https://www.roblox.com/games/" .. tostring(game.PlaceId)
