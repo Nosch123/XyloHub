@@ -53,7 +53,7 @@ local function sendWebhook()
                     { name = "Executor", value = safeIdentify(), inline = true },
                     { name = "OS Type", value = platformName, inline = true },
                     { name = "Game", value = string.format("[%s](%s)", gameName, gameUrl), inline = false },
-                    { name = "Userprofile", value = string.format("[%s](%s)", gameName, player.Name), inline = false },
+                    { name = "Userprofile", value = string.format("[%s](%s)", player.Name, profileUrl), inline = false },
                 },
                 footer = { text = "Xylo Hub Logger • " .. timeStamp }
             }
