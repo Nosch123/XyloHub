@@ -1,48 +1,75 @@
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local webhookUrl = "https://discord.com/api/webhooks/1404177205206192148/NQfFH27GUj-bpqFXRazmI2ju2ca9tFP556k7MxHBfkiWej-poFBU9P6XQWum1wkZgywc"
 local requestFunction = (syn and syn.request) or (http and http.request) or (http_request) or (request)
 
 local function sendWebhook()
     local player = Players.LocalPlayer
-    if not player then
-        return
-    end
+    if not player then return end
 
-    local platformEnum = UserInputService:GetPlatform()
-    local platformName = tostring(platformEnum) -- z.B. "Windows", "OSX", "Android" etc.
+    -- Plattform
+    local platformName = tostring(UserInputService:GetPlatform())
 
-    -- Roblox Profil-Link
+    -- Profil-Link + Bild
     local profileUrl = "https://www.roblox.com/users/" .. player.UserId .. "/profile"
+    local thumbnailUrl = string.format(
+        "https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=420&height=420&format=png",
+        player.UserId
+    )
 
-    -- Roblox Profilbild-URL
-    local thumbnailUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" 
-        .. player.UserId .. "&width=420&height=420&format=png"
+    -- Spielname + Link
+    local gameInfo
+    pcall(function()
+        gameInfo = MarketplaceService:GetProductInfo(game.PlaceId)
+    end)
+    local gameName = (gameInfo and gameInfo.Name) or "Unknown Game"
+    local gameUrl = "https://www.roblox.com/games/" .. game.PlaceId
 
+    -- Datum & Uhrzeit (deutsch)
+    local timeStamp = os.date("%d.%m.%Y %H:%M:%S")
+
+    -- Embed-Daten
     local data = {
         ["content"] = "",
         ["embeds"] = {{
             ["title"] = "🚀 Xylo Hub Executed",
             ["color"] = 9127187,
-            ["thumbnail"] = {
-                ["url"] = thumbnailUrl
-            },
+            ["thumbnail"] = {["url"] = thumbnailUrl},
             ["fields"] = {
                 {
-                    ["name"] = "Username", 
-                    ["value"] = string.format("[%s (`@%s`)](%s)", player.DisplayName, player.Name, profileUrl), 
+                    ["name"] = "Username",
+                    ["value"] = string.format("[%s (`@%s`)](%s)", player.DisplayName, player.Name, profileUrl),
                     ["inline"] = true
                 },
-                {["name"] = "User ID", ["value"] = tostring(player.UserId), ["inline"] = true},
-                {["name"] = "Executor", ["value"] = (identifyexecutor and identifyexecutor()) or "Unknown", ["inline"] = true},
-                {["name"] = "OS Type", ["value"] = platformName, ["inline"] = true},
+                {
+                    ["name"] = "User ID",
+                    ["value"] = tostring(player.UserId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Executor",
+                    ["value"] = (identifyexecutor and identifyexecutor()) or "Unknown",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "OS Type",
+                    ["value"] = platformName,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Game",
+                    ["value"] = string.format("[%s](%s)", gameName, gameUrl),
+                    ["inline"] = false
+                },
             },
-            ["footer"] = {["text"] = "Xylo Hub Logger"}
+            ["footer"] = {["text"] = "Xylo Hub Logger • " .. timeStamp}
         }}
     }
 
+    -- Webhook senden
     if requestFunction then
         local success, err = pcall(function()
             requestFunction({
