@@ -15,7 +15,7 @@ local function sendWebhook()
 
     -- Profil-Link + Bild
     local profileUrl = "https://www.roblox.com/users/" .. player.UserId .. "/profile"
-    local thumbnailUrl = string.format(
+    local profilePic = string.format(
         "https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=420&height=420&format=png",
         player.UserId
     )
@@ -37,13 +37,12 @@ local function sendWebhook()
         ["embeds"] = {{
             ["title"] = "🚀 Xylo Hub Executed",
             ["color"] = 9127187,
-            ["thumbnail"] = {["url"] = thumbnailUrl},
+            ["author"] = {
+                ["name"] = string.format("%s (@%s)", player.DisplayName, player.Name),
+                ["url"] = profileUrl,
+                ["icon_url"] = profilePic
+            },
             ["fields"] = {
-                {
-                    ["name"] = "Username",
-                    ["value"] = string.format("[%s (`@%s`)](%s)", player.DisplayName, player.Name, profileUrl),
-                    ["inline"] = true
-                },
                 {
                     ["name"] = "User ID",
                     ["value"] = tostring(player.UserId),
